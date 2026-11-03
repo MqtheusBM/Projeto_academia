@@ -1,0 +1,73 @@
+<main class="min-h-screen bg-gym-bg flex items-center justify-center px-4">
+  <section class="w-full max-w-md text-center">
+    <div class="mb-10">
+      <p class="font-[Montserrat] text-4xl font-extrabold tracking-tight text-gym-accent">YB</p>
+      <h1 class="mt-3 font-[Montserrat] text-3xl font-extrabold">Sua Academia</h1>
+      <p class="mt-2 text-gym-muted">Entre no treino. Acompanhe. Evolua.</p>
+    </div>
+
+    <form class="rounded-2xl bg-gym-card p-6 shadow-xl space-y-4 text-left" (ngSubmit)="submit()">
+      <label class="block text-sm text-gym-muted">
+        E-mail / CPF
+        <input
+          class="mt-1 w-full rounded-xl bg-gym-card-alt px-4 py-3 text-gym-text outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-gym-accent"
+          name="identifier"
+          [(ngModel)]="identifier"
+          placeholder="ana@gym.com"
+          autocomplete="username"
+        />
+      </label>
+
+      <label class="block text-sm text-gym-muted">
+        Senha
+        <input
+          class="mt-1 w-full rounded-xl bg-gym-card-alt px-4 py-3 text-gym-text outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-gym-accent"
+          name="password"
+          type="password"
+          [(ngModel)]="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+        />
+      </label>
+
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <button
+          type="button"
+          class="rounded-xl px-3 py-3 text-sm font-semibold ring-1 transition"
+          [class.bg-gym-accent]="role === 'aluno'"
+          [class.text-black]="role === 'aluno'"
+          [class.text-gym-muted]="role !== 'aluno'"
+          [class.ring-white/10]="role !== 'aluno'"
+          (click)="role = 'aluno'"
+        >
+          Sou Aluno
+        </button>
+        <button
+          type="button"
+          class="rounded-xl px-3 py-3 text-sm font-semibold ring-1 transition"
+          [class.bg-gym-accent]="role === 'personal'"
+          [class.text-black]="role === 'personal'"
+          [class.text-gym-muted]="role !== 'personal'"
+          [class.ring-white/10]="role !== 'personal'"
+          (click)="role = 'personal'"
+        >
+          Sou Personal
+        </button>
+      </div>
+
+      @if (error()) {
+        <p class="text-sm text-gym-danger">{{ error() }}</p>
+      }
+
+      <button
+        type="submit"
+        class="w-full rounded-xl bg-gym-accent py-3 font-bold text-black hover:brightness-110"
+      >
+        Entrar no Treino
+      </button>
+      <p class="text-xs text-gym-muted text-center">
+        Mock: qualquer senha. Alunos: ana@gym.com, carlos@gym.com, beatriz@gym.com, marcos@gym.com, juliana@gym.com
+      </p>
+    </form>
+  </section>
+</main>

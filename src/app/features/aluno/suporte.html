@@ -1,0 +1,42 @@
+<section class="mx-auto flex min-h-[70vh] max-w-3xl flex-col px-4 py-8">
+  <h1 class="font-[Montserrat] text-3xl font-extrabold">Suporte</h1>
+  <div class="mt-4 grid grid-cols-2 gap-3">
+    <button class="rounded-xl px-3 py-3 font-semibold" [class.bg-gym-accent]="mode() === 'personal'" [class.text-black]="mode() === 'personal'" [class.bg-gym-card]="mode() !== 'personal'" (click)="mode.set('personal')">
+      Falar com meu Personal
+    </button>
+    <button class="rounded-xl px-3 py-3 font-semibold" [class.bg-gym-accent]="mode() === 'gymbot'" [class.text-black]="mode() === 'gymbot'" [class.bg-gym-card]="mode() !== 'gymbot'" (click)="mode.set('gymbot')">
+      GymBot (Dúvida rápida)
+    </button>
+  </div>
+
+  <div class="mt-6 flex flex-1 flex-col rounded-2xl bg-gym-card p-4">
+    <div class="flex-1 space-y-3 overflow-y-auto">
+      @if (messages().length === 0) {
+        <p class="text-sm text-gym-muted">
+          @if (mode() === 'gymbot') {
+            Pergunte algo como “posição dos pés no leg press para glúteo”.
+          } @else {
+            Envie uma mensagem para o Marcos Trainer.
+          }
+        </p>
+      }
+      @for (msg of messages(); track msg.id) {
+        <article class="max-w-[85%] rounded-2xl px-4 py-3" [class.ml-auto]="msg.from === 'aluno'" [class.bg-gym-accent]="msg.from === 'aluno'" [class.text-black]="msg.from === 'aluno'" [class.bg-gym-card-alt]="msg.from !== 'aluno'">
+          <p class="text-xs font-semibold opacity-70">{{ msg.from === 'gymbot' ? 'GymBot' : msg.from === 'personal' ? 'Personal' : 'Você' }}</p>
+          <p class="mt-1">{{ msg.text }}</p>
+          @if (msg.video) {
+            <a class="mt-3 block overflow-hidden rounded-xl bg-black" [href]="'https://www.youtube.com/watch?v=' + msg.video.youtubeId" target="_blank" rel="noreferrer">
+              <img class="h-36 w-full object-cover" [src]="'https://img.youtube.com/vi/' + msg.video.youtubeId + '/hqdefault.jpg'" [alt]="msg.video.title" />
+              <p class="px-3 py-2 text-sm text-gym-accent">{{ msg.video.title }} · Ver no YouTube</p>
+            </a>
+          }
+          <p class="mt-1 text-xs opacity-70">{{ msg.at }}</p>
+        </article>
+      }
+    </div>
+    <form class="mt-4 flex gap-2" (ngSubmit)="send()">
+      <input class="flex-1 rounded-xl bg-gym-card-alt px-4 py-3 ring-1 ring-white/10" name="draft" [(ngModel)]="draft" placeholder="Escreva sua dúvida" />
+      <button class="rounded-xl bg-gym-accent px-4 font-bold text-black">Enviar</button>
+    </form>
+  </div>
+</section>

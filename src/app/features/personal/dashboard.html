@@ -1,0 +1,50 @@
+<section class="mx-auto max-w-6xl px-4 py-8">
+  <header class="mb-8">
+    <p class="text-sm uppercase tracking-widest text-gym-accent">Personal</p>
+    <h1 class="mt-1 font-[Montserrat] text-3xl font-extrabold">Olá, Treinador {{ trainer.split(' ')[0] }}</h1>
+    <p class="mt-2 text-gym-muted">Quem treina no dia selecionado e status da carteira.</p>
+  </header>
+
+  <div class="mb-6 flex gap-2 overflow-x-auto pb-1">
+    @for (day of weekdays; track day.id) {
+      <button
+        class="rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap"
+        [class.bg-gym-accent]="selectedDay() === day.id"
+        [class.text-black]="selectedDay() === day.id"
+        [class.bg-gym-card]="selectedDay() !== day.id"
+        [class.text-gym-muted]="selectedDay() !== day.id"
+        (click)="selectedDay.set(day.id)"
+      >
+        {{ day.short }}
+      </button>
+    }
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    @for (student of students(); track student.id) {
+      <a
+        [routerLink]="['/personal/aluno', student.id]"
+        class="rounded-2xl bg-gym-card p-5 ring-1 ring-white/5 transition hover:ring-gym-accent"
+      >
+        <div class="flex items-center gap-4">
+          <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gym-accent font-bold text-black">
+            {{ initials(student.name) }}
+          </div>
+          <div>
+            <h2 class="text-lg font-semibold">{{ student.name }}</h2>
+            <p class="text-sm text-gym-muted">{{ student.weeklyFocus }}</p>
+          </div>
+        </div>
+        <p
+          class="mt-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold"
+          [class.bg-gym-accent]="status(student.id) === 'Treinou hoje'"
+          [class.text-black]="status(student.id) === 'Treinou hoje'"
+          [class.bg-white/10]="status(student.id) !== 'Treinou hoje'"
+          [class.text-gym-muted]="status(student.id) !== 'Treinou hoje'"
+        >
+          {{ status(student.id) }}
+        </p>
+      </a>
+    }
+  </div>
+</section>

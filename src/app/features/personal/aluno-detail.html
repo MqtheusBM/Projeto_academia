@@ -1,0 +1,375 @@
+@if (student(); as aluno) {
+  <section class="mx-auto max-w-4xl pb-12">
+    <!-- Banner de Meta -->
+    <div class="sticky top-0 z-20 bg-gym-accent px-4 py-4 text-black shadow-lg">
+      <p class="text-xs font-bold uppercase tracking-widest">Meta</p>
+      <p class="font-semibold">{{ aluno.goal }} Lembre-se: {{ aluno.careNote }}</p>
+    </div>
+
+    <div class="px-4 py-6 space-y-6">
+      <a routerLink="/personal/dashboard" class="text-sm text-gym-muted hover:text-gym-accent transition inline-block">
+        ← Voltar aos alunos
+      </a>
+
+      <!-- Cabeçalho do Aluno -->
+      <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="font-[Montserrat] text-3xl font-extrabold text-white">{{ aluno.name }}</h1>
+          <p class="text-gym-muted mt-1">{{ aluno.age }} anos · {{ planLabel[aluno.plan] }} · {{ aluno.daysRemaining }} dias restantes</p>
+        </div>
+
+        <!-- Abas de navegação -->
+        <div class="flex rounded-xl bg-gym-card p-1 border border-white/10 self-start sm:self-auto">
+          <button
+            type="button"
+            (click)="setTab('treinos')"
+            class="rounded-lg px-4 py-2 text-sm font-bold transition"
+            [class.bg-gym-accent]="currentTab() === 'treinos'"
+            [class.text-black]="currentTab() === 'treinos'"
+            [class.text-gym-muted]="currentTab() !== 'treinos'"
+          >
+            📋 Ficha de Treino
+          </button>
+          <button
+            type="button"
+            (click)="setTab('evolucao')"
+            class="rounded-lg px-4 py-2 text-sm font-bold transition flex items-center gap-1.5"
+            [class.bg-gym-accent]="currentTab() === 'evolucao'"
+            [class.text-black]="currentTab() === 'evolucao'"
+            [class.text-gym-muted]="currentTab() !== 'evolucao'"
+          >
+            <span>📈</span> Evolução de Cargas
+          </button>
+        </div>
+      </header>
+
+      <!-- ABA 1: FICHA DE TREINO E CONSTRUTOR -->
+      @if (currentTab() === 'treinos') {
+        <!-- Seletor de dias da semana -->
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          @for (day of weekdays; track day.id) {
+            <button
+              class="rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition"
+              [class.bg-gym-accent]="selectedDay() === day.id"
+              [class.text-black]="selectedDay() === day.id"
+              [class.bg-gym-card]="selectedDay() !== day.id"
+              [class.text-white]="selectedDay() !== day.id"
+              (click)="selectedDay.set(day.id)"
+            >
+              {{ day.short }}
+            </button>
+          }
+        </div>
+
+        <!-- Lista de exercícios do dia selecionado -->
+        <div class="rounded-2xl bg-gym-card p-5">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-lg font-bold text-white">{{ sheet()?.focus || 'Sem ficha' }}</h2>
+            <button
+              type="button"
+              (click)="setTab('evolucao')"
+              class="text-xs text-gym-accent hover:underline font-semibold"
+            >
+              Ver evolução do aluno →
+            </button>
+          </div>
+
+          @if (sheet()?.rest) {
+            <p class="mt-3 text-gym-muted">Dia de descanso.</p>
+          }
+
+          <ul class="mt-4 space-y-3">
+            @for (exercise of sheet()?.exercises ?? []; track exercise.id) {
+              <li class="flex items-center justify-between rounded-xl bg-gym-card-alt px-4 py-3">
+                <div>
+                  <p class="font-semibold text-white">{{ exercise.name }}</p>
+                  <p class="text-sm text-gym-muted">{{ exercise.sets }}x{{ exercise.reps }} · <span class="text-gym-accent font-bold">{{ exercise.loadKg }}kg</span></p>
+                </div>
+                <button
+                  type="button"
+                  (click)="setTab('evolucao'); selectExercise(exercise.name)"
+                  class="rounded-lg bg-gym-card px-3 py-1.5 text-xs font-semibold text-gym-muted hover:text-gym-accent hover:bg-white/5 transition"
+                >
+                  Ver curva de carga ↗
+                </button>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <!-- Construtor de Treino -->
+        <form class="grid gap-3 rounded-2xl bg-gym-card p-5 sm:grid-cols-4" (ngSubmit)="add()">
+          <h2 class="sm:col-span-4 font-bold text-white">Adicionar exercício na ficha</h2>
+          <input
+            class="rounded-xl bg-gym-card-alt px-3 py-2 sm:col-span-2 text-white ring-1 ring-white/10"
+            name="name"
+            [(ngModel)]="name"
+            placeholder="Nome do Exercício"
+          />
+          <input
+            class="rounded-xl bg-gym-card-alt px-3 py-2 text-white ring-1 ring-white/10"
+            name="sets"
+            type="number"
+            [(ngModel)]="sets"
+            placeholder="Séries"
+          />
+          <input
+            class="rounded-xl bg-gym-card-alt px-3 py-2 text-white ring-1 ring-white/10"
+            name="reps"
+            type="number"
+            [(ngModel)]="reps"
+            placeholder="Reps"
+          />
+          <input
+            class="rounded-xl bg-gym-card-alt px-3 py-2 text-white ring-1 ring-white/10"
+            name="loadKg"
+            type="number"
+            [(ngModel)]="loadKg"
+            placeholder="Carga (kg)"
+          />
+          <button class="rounded-xl bg-gym-accent px-4 py-2 font-bold text-black sm:col-span-3 hover:bg-yellow-400 transition">
+            Adicionar exercício
+          </button>
+        </form>
+      }
+
+      <!-- ABA 2: EVOLUÇÃO DE CARGAS DO ALUNO -->
+      @if (currentTab() === 'evolucao') {
+        <div class="space-y-6 animate-fade-in">
+          <!-- Barra de Ações e Seletor -->
+          <article class="rounded-2xl bg-gym-card p-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <label for="trainerExerciseSelect" class="block text-xs font-bold uppercase tracking-wider text-gym-muted mb-1">
+                  Acompanhar Exercício
+                </label>
+                <select
+                  id="trainerExerciseSelect"
+                  [ngModel]="selectedExerciseName()"
+                  (ngModelChange)="selectExercise($event)"
+                  class="w-full sm:w-80 rounded-xl bg-gym-card-alt px-4 py-2.5 text-base font-bold text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-gym-accent"
+                >
+                  @for (exName of availableExercises(); track exName) {
+                    <option [value]="exName">{{ exName }}</option>
+                  }
+                </select>
+              </div>
+
+              <button
+                type="button"
+                (click)="openRegisterModal(selectedExerciseName())"
+                class="rounded-xl bg-gym-accent px-4 py-2 text-sm font-bold text-black hover:bg-yellow-400 transition self-start sm:self-end"
+              >
+                + Registrar Carga para Aluno
+              </button>
+            </div>
+
+            <!-- Pílulas rápidas -->
+            <div class="mt-4 flex gap-2 overflow-x-auto pb-1">
+              @for (exName of availableExercises(); track exName) {
+                <button
+                  type="button"
+                  (click)="selectExercise(exName)"
+                  class="rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition"
+                  [class.bg-gym-accent]="selectedExerciseName() === exName"
+                  [class.text-black]="selectedExerciseName() === exName"
+                  [class.bg-gym-card-alt]="selectedExerciseName() !== exName"
+                  [class.text-gym-muted]="selectedExerciseName() !== exName"
+                >
+                  {{ exName }}
+                </button>
+              }
+            </div>
+          </article>
+
+          <!-- Métricas de Desempenho do Aluno -->
+          @if (stats(); as s) {
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="rounded-2xl bg-gym-card p-4 border border-white/5">
+                <p class="text-xs uppercase text-gym-muted font-bold">Carga Inicial</p>
+                <p class="text-2xl font-black text-white mt-1">{{ s.initial }} <span class="text-sm font-normal text-gym-muted">kg</span></p>
+              </div>
+              <div class="rounded-2xl bg-gym-card p-4 border border-white/5">
+                <p class="text-xs uppercase text-gym-muted font-bold">Carga Atual</p>
+                <p class="text-2xl font-black text-gym-accent mt-1">{{ s.current }} <span class="text-sm font-normal text-gym-muted">kg</span></p>
+              </div>
+              <div class="rounded-2xl bg-gym-card p-4 border border-white/5">
+                <p class="text-xs uppercase text-gym-muted font-bold">Ganho do Aluno</p>
+                <p class="text-2xl font-black text-emerald-400 mt-1">+{{ s.diff }} <span class="text-sm font-normal text-gym-muted">kg</span></p>
+              </div>
+              <div class="rounded-2xl bg-gym-card p-4 border border-white/5">
+                <p class="text-xs uppercase text-gym-muted font-bold">Progressão Relativa</p>
+                <p class="text-2xl font-black text-gym-accent mt-1">+{{ s.percent }}%</p>
+              </div>
+            </div>
+          }
+
+          <!-- Gráfico do Aluno -->
+          <article class="rounded-2xl bg-gym-card p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="text-lg font-bold text-white">Curva de Carga do Aluno</h2>
+                <p class="text-xs text-gym-muted">Mesma visão acessível pelo aluno em seu painel</p>
+              </div>
+              <span class="rounded-full bg-gym-accent/15 px-3 py-1 text-xs font-bold text-gym-accent">
+                {{ selectedExerciseName() }}
+              </span>
+            </div>
+
+            <div class="relative h-72 w-full rounded-xl bg-gym-card-alt/50 p-4">
+              <canvas #chart></canvas>
+            </div>
+          </article>
+
+          <!-- Linha do tempo de todas as evoluções do aluno -->
+          <article class="rounded-2xl bg-gym-card p-5">
+            <h2 class="text-lg font-bold text-white mb-4">Histórico de Progressão de {{ aluno.name }}</h2>
+
+            @if (progressions().length === 0) {
+              <p class="text-sm text-gym-muted py-4">O aluno ainda não possui evoluções registradas.</p>
+            } @else {
+              <div class="space-y-3">
+                @for (prog of progressions(); track prog.id) {
+                  <div
+                    class="flex flex-col sm:flex-row sm:items-center justify-between rounded-xl bg-gym-card-alt p-4 gap-3 border transition"
+                    [class.border-gym-accent]="prog.exerciseName === selectedExerciseName()"
+                    [class.border-white/5]="prog.exerciseName !== selectedExerciseName()"
+                  >
+                    <div class="space-y-1">
+                      <div class="flex items-center gap-2">
+                        <span class="rounded bg-gym-accent/20 px-2 py-0.5 text-xs font-bold text-gym-accent">
+                          {{ prog.dateLabel }}
+                        </span>
+                        <span class="font-bold text-white">{{ prog.exerciseName }}</span>
+                      </div>
+                      <p class="text-xs text-gym-muted">
+                        {{ prog.sets }} séries x {{ prog.reps }} reps
+                        @if (prog.notes) {
+                          · <span class="italic text-gray-300">"{{ prog.notes }}"</span>
+                        }
+                      </p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                      <div class="text-right">
+                        <p class="text-xs text-gym-muted line-through">{{ prog.previousLoadKg }} kg</p>
+                        <p class="text-xl font-black text-gym-accent">{{ prog.newLoadKg }} kg</p>
+                      </div>
+                      <div class="rounded-lg bg-emerald-500/15 px-2.5 py-1 text-sm font-bold text-emerald-400">
+                        +{{ prog.newLoadKg - prog.previousLoadKg }} kg
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </article>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Modal para o Personal registrar ou corrigir evolução do aluno -->
+  @if (isModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm">
+      <div class="w-full max-w-md rounded-2xl bg-gym-card p-6 border border-white/10 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white">Registrar Carga para o Aluno</h3>
+          <button (click)="closeModal()" class="text-gym-muted hover:text-white text-lg font-bold">✕</button>
+        </div>
+
+        <form class="mt-5 space-y-4" (ngSubmit)="saveProgression()">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gym-muted mb-1">Exercício</label>
+            <select
+              [ngModel]="modalExerciseName()"
+              (ngModelChange)="onModalExerciseChange($event)"
+              name="modalEx"
+              class="w-full rounded-xl bg-gym-card-alt px-3 py-2 text-sm font-bold text-white ring-1 ring-white/10"
+            >
+              @for (ex of availableExercises(); track ex) {
+                <option [value]="ex">{{ ex }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-gym-muted mb-1">Carga Anterior (kg)</label>
+              <input
+                type="number"
+                [ngModel]="modalPreviousLoad()"
+                (ngModelChange)="modalPreviousLoad.set($event)"
+                name="prevLoad"
+                class="w-full rounded-xl bg-gym-card-alt px-3 py-2 text-base font-bold text-gym-muted ring-1 ring-white/10"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-gym-muted mb-1">Nova Carga (kg)</label>
+              <input
+                type="number"
+                [ngModel]="modalNewLoad()"
+                (ngModelChange)="modalNewLoad.set($event)"
+                name="newLoad"
+                class="w-full rounded-xl bg-gym-card-alt px-3 py-2 text-base font-black text-gym-accent ring-1 ring-white/10"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-gym-muted mb-1">Séries</label>
+              <input
+                type="number"
+                [ngModel]="modalSets()"
+                (ngModelChange)="modalSets.set($event)"
+                name="sets"
+                class="w-full rounded-xl bg-gym-card-alt px-3 py-2 text-sm text-white ring-1 ring-white/10"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-gym-muted mb-1">Reps</label>
+              <input
+                type="number"
+                [ngModel]="modalReps()"
+                (ngModelChange)="modalReps.set($event)"
+                name="reps"
+                class="w-full rounded-xl bg-gym-card-alt px-3 py-2 text-sm text-white ring-1 ring-white/10"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gym-muted mb-1">Nota do Treinador</label>
+            <input
+              type="text"
+              [ngModel]="modalNotes()"
+              (ngModelChange)="modalNotes.set($event)"
+              name="notes"
+              placeholder="Ex: Aluno aumentou após correção de postura"
+              class="w-full rounded-xl bg-gym-card-alt px-3 py-2 text-sm text-white ring-1 ring-white/10"
+            />
+          </div>
+
+          <div class="mt-6 flex gap-3">
+            <button
+              type="button"
+              (click)="closeModal()"
+              class="flex-1 rounded-xl bg-gym-card-alt py-2.5 text-sm font-semibold text-gym-muted hover:text-white"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="flex-1 rounded-xl bg-gym-accent py-2.5 text-sm font-bold text-black hover:bg-yellow-400 transition"
+            >
+              Salvar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+} @else {
+  <p class="p-8 text-gym-muted">Aluno não encontrado.</p>
+}

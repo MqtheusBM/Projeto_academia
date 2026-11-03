@@ -1,0 +1,172 @@
+@if (student(); as aluno) {
+  <section class="mx-auto max-w-3xl px-4 py-8 space-y-6">
+    <header>
+      <p class="text-sm uppercase tracking-widest text-gym-accent">Hoje</p>
+      <h1 class="font-[Montserrat] text-3xl font-extrabold">Olá, {{ aluno.name.split(' ')[0] }}</h1>
+    </header>
+
+    @if (feedbackMsg()) {
+      <div class="rounded-xl bg-gym-accent/20 border border-gym-accent/40 px-4 py-3 text-gym-accent font-semibold flex items-center justify-between animate-fade-in">
+        <span>{{ feedbackMsg() }}</span>
+        <a routerLink="/aluno/evolucao" class="text-xs uppercase underline tracking-wider hover:text-white">Ver evolução</a>
+      </div>
+    }
+
+    <article class="rounded-2xl bg-gym-card p-5">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h2 class="font-bold">{{ planLabel[aluno.plan] }} · Ativo</h2>
+          <p class="text-sm text-gym-muted">Restam {{ aluno.daysRemaining }} dias</p>
+        </div>
+      </div>
+      <div class="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+        <div class="progress-bar h-full" [style.width.%]="progress()"></div>
+      </div>
+    </article>
+
+    <article class="rounded-2xl bg-gym-card p-5">
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-sm text-gym-muted">{{ todayLabel }}</p>
+        <a routerLink="/aluno/evolucao" class="text-xs text-gym-accent hover:underline flex items-center gap-1 font-semibold">
+          Histórico de Cargas →
+        </a>
+      </div>
+      <h2 class="text-2xl font-extrabold uppercase text-gym-accent">
+        {{ sheet()?.rest ? 'Descanso' : (sheet()?.focus ?? 'Sem treino') }}
+      </h2>
+
+      <ul class="mt-5 space-y-3">
+        @for (exercise of sheet()?.exercises ?? []; track exercise.id) {
+          <li class="flex flex-col sm:flex-row sm:items-center justify-between rounded-xl bg-gym-card-alt px-4 py-3 gap-3">
+            <div>
+              <p class="font-semibold text-white">{{ exercise.name }}</p>
+              <p class="text-sm text-gym-muted">{{ exercise.sets }}x{{ exercise.reps }} · <span class="text-gym-accent font-bold">{{ exercise.loadKg }}kg</span></p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                (click)="openEvolutionModal(exercise)"
+                class="rounded-lg bg-gym-accent/15 px-3 py-1.5 text-xs font-semibold text-gym-accent hover:bg-gym-accent hover:text-black transition"
+                title="Informar aumento de carga neste exercício"
+              >
+                ⚡ Evoluir carga
+              </button>
+              <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                <input
+                  type="checkbox"
+                  class="h-4 w-4 rounded accent-gym-accent"
+                  [checked]="store.done()[aluno.id]?.includes(exercise.id)"
+                  (change)="toggle(exercise.id)"
+                />
+                Feito
+              </label>
+            </div>
+          </li>
+        }
+      </ul>
+    </article>
+
+    <!-- Resumo de Evolução Recente -->
+    @if (recentProgressions().length > 0) {
+      <article class="rounded-2xl bg-gym-card p-5">
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold text-white flex items-center gap-2">
+            <span>📈</span> Suas últimas melhorias de carga
+          </h3>
+          <a routerLink="/aluno/evolucao" class="text-xs text-gym-accent hover:underline">Ver tudo</a>
+        </div>
+        <div class="mt-4 grid gap-2 sm:grid-cols-3">
+          @for (prog of recentProgressions(); track prog.id) {
+            <div class="rounded-xl bg-gym-card-alt p-3 border border-white/5">
+              <p class="text-xs text-gym-muted">{{ prog.dateLabel }}</p>
+              <p class="font-bold text-sm text-white truncate">{{ prog.exerciseName }}</p>
+              <div class="mt-1 flex items-baseline gap-1.5">
+                <span class="text-xs text-gym-muted line-through">{{ prog.previousLoadKg }}kg</span>
+                <span class="text-base font-extrabold text-gym-accent">{{ prog.newLoadKg }}kg</span>
+                <span class="text-xs font-semibold text-emerald-400">
+                  (+{{ prog.newLoadKg - prog.previousLoadKg }}kg)
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      </article>
+    }
+  </section>
+
+  <!-- Modal para registrar evolução de carga -->
+  @if (selectedExercise(); as ex) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm">
+      <div class="w-full max-w-md rounded-2xl bg-gym-card p-6 border border-white/10 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white">Evolução de Carga</h3>
+          <button (click)="closeModal()" class="text-gym-muted hover:text-white text-lg font-bold">✕</button>
+        </div>
+
+        <p class="mt-2 text-sm text-gym-muted">
+          Informe a carga que você levantou hoje no treino de <span class="font-bold text-gym-accent">{{ ex.name }}</span>.
+        </p>
+
+        <div class="mt-5 space-y-4">
+          <div class="rounded-xl bg-gym-card-alt p-3 flex justify-between items-center text-sm">
+            <span class="text-gym-muted">Carga anterior registrada:</span>
+            <span class="font-bold text-white">{{ ex.loadKg }} kg</span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gym-muted mb-1">
+              Nova Carga de Hoje (kg)
+            </label>
+            <div class="relative flex items-center">
+              <input
+                type="number"
+                [ngModel]="newLoadKg()"
+                (ngModelChange)="newLoadKg.set($event)"
+                class="w-full rounded-xl bg-gym-card-alt px-4 py-3 text-2xl font-black text-gym-accent ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-gym-accent"
+                min="0"
+                step="0.5"
+              />
+              <span class="absolute right-4 font-bold text-gym-muted">kg</span>
+            </div>
+          </div>
+
+          @if (newLoadKg() > ex.loadKg) {
+            <p class="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+              🎉 Parabéns! Progresso de +{{ newLoadKg() - ex.loadKg }} kg hoje!
+            </p>
+          }
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gym-muted mb-1">
+              Observações (opcional)
+            </label>
+            <input
+              type="text"
+              [ngModel]="notes()"
+              (ngModelChange)="notes.set($event)"
+              placeholder="Ex: Execução limpa, subiu fácil"
+              class="w-full rounded-xl bg-gym-card-alt px-3 py-2 text-sm text-white ring-1 ring-white/10 focus:outline-none focus:ring-1 focus:ring-gym-accent"
+            />
+          </div>
+
+          <div class="mt-6 flex gap-3">
+            <button
+              type="button"
+              (click)="closeModal()"
+              class="flex-1 rounded-xl bg-gym-card-alt py-2.5 text-sm font-semibold text-gym-muted hover:text-white"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              (click)="saveProgression()"
+              class="flex-1 rounded-xl bg-gym-accent py-2.5 text-sm font-bold text-black hover:bg-yellow-400 transition shadow-lg"
+            >
+              Salvar Evolução
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+}

@@ -1,0 +1,33 @@
+<section class="mx-auto grid max-w-6xl gap-4 px-4 py-8 lg:grid-cols-[280px_1fr]">
+  <aside class="space-y-2">
+    <h1 class="mb-4 font-[Montserrat] text-2xl font-extrabold">Mensagens</h1>
+    @for (student of store.students(); track student.id) {
+      <button
+        class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left"
+        [class.bg-gym-accent]="selectedId() === student.id"
+        [class.text-black]="selectedId() === student.id"
+        [class.bg-gym-card]="selectedId() !== student.id"
+        (click)="selectedId.set(student.id)"
+      >
+        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-sm font-bold">{{ initials(student.name) }}</span>
+        {{ student.name }}
+      </button>
+    }
+  </aside>
+
+  <div class="flex min-h-[420px] flex-col rounded-2xl bg-gym-card p-4">
+    <h2 class="mb-4 font-bold">{{ selected()?.name }}</h2>
+    <div class="flex-1 space-y-3 overflow-y-auto">
+      @for (msg of messages(); track msg.id) {
+        <article class="max-w-[80%] rounded-2xl px-4 py-3" [class.ml-auto]="msg.from === 'personal'" [class.bg-gym-accent]="msg.from === 'personal'" [class.text-black]="msg.from === 'personal'" [class.bg-gym-card-alt]="msg.from !== 'personal'">
+          <p>{{ msg.text }}</p>
+          <p class="mt-1 text-xs opacity-70">{{ msg.at }}</p>
+        </article>
+      }
+    </div>
+    <form class="mt-4 flex gap-2" (ngSubmit)="send()">
+      <input class="flex-1 rounded-xl bg-gym-card-alt px-4 py-3 ring-1 ring-white/10" name="draft" [(ngModel)]="draft" placeholder="Escreva para o aluno" />
+      <button class="rounded-xl bg-gym-accent px-4 font-bold text-black">Enviar</button>
+    </form>
+  </div>
+</section>

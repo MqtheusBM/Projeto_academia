@@ -1,0 +1,27 @@
+@if (student(); as aluno) {
+  <section class="mx-auto max-w-3xl px-4 py-8 space-y-6">
+    <h1 class="font-[Montserrat] text-3xl font-extrabold">Treinos</h1>
+    <div class="grid gap-3 sm:grid-cols-2">
+      @for (day of weekdays; track day.id) {
+        <article class="rounded-2xl bg-gym-card p-4" [class.ring-2]="day.id === today" [class.ring-gym-accent]="day.id === today">
+          <p class="text-sm text-gym-muted">{{ day.label }}</p>
+          <p class="font-semibold">{{ focus(day.id) }}</p>
+        </article>
+      }
+    </div>
+
+    <div class="rounded-2xl bg-gym-card p-5">
+      <h2 class="font-bold">Histórico recente</h2>
+      <ul class="mt-3 space-y-2">
+        @for (item of aluno.history; track item.date) {
+          <li class="flex justify-between text-sm">
+            <span>{{ item.date }} · {{ item.focus }}</span>
+            <span [class.text-gym-accent]="item.completed" [class.text-gym-muted]="!item.completed">
+              {{ item.completed ? 'Concluído' : 'Pendente' }}
+            </span>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+}

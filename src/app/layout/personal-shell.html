@@ -1,0 +1,33 @@
+<div class="min-h-screen bg-gym-bg md:grid md:grid-cols-[240px_1fr]">
+  <aside class="hidden md:flex flex-col border-r border-white/5 bg-gym-card p-5">
+    <p class="font-[Montserrat] text-xl font-extrabold text-gym-accent">YellowBlack</p>
+    <p class="mt-1 text-sm text-gym-muted">Área do Personal</p>
+    <nav class="mt-8 flex flex-col gap-2">
+      <a
+        routerLink="/personal/dashboard"
+        routerLinkActive="bg-gym-accent text-black"
+        class="rounded-xl px-4 py-3 font-semibold text-gym-muted hover:bg-white/5"
+        ><lucide-icon name="users" class="inline h-4 w-4"></lucide-icon> Alunos</a
+      >
+      <a
+        routerLink="/personal/mensagens"
+        routerLinkActive="bg-gym-accent text-black"
+        class="rounded-xl px-4 py-3 font-semibold text-gym-muted hover:bg-white/5"
+        ><lucide-icon name="message-circle" class="inline h-4 w-4"></lucide-icon> Mensagens</a
+      >
+    </nav>
+    <button class="mt-auto rounded-xl px-4 py-3 text-left text-gym-muted hover:bg-white/5" (click)="logout()">
+      <lucide-icon name="log-out" class="inline h-4 w-4"></lucide-icon> Sair
+    </button>
+  </aside>
+
+  <div class="pb-24 md:pb-0">
+    <router-outlet />
+  </div>
+
+  <nav class="md:hidden fixed bottom-0 inset-x-0 grid grid-cols-3 border-t border-white/10 bg-gym-card">
+    <a routerLink="/personal/dashboard" routerLinkActive="text-gym-accent" class="py-3 text-center text-sm text-gym-muted">Alunos</a>
+    <a routerLink="/personal/mensagens" routerLinkActive="text-gym-accent" class="py-3 text-center text-sm text-gym-muted">Mensagens</a>
+    <button class="py-3 text-sm text-gym-muted" (click)="logout()">Sair</button>
+  </nav>
+</div>
